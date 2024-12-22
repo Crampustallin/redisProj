@@ -11,21 +11,16 @@ type Handler struct {
 	db DataBase
 }
 
-func NewServer(db DataBase) *Handler {
+func NewHandler(db DataBase) *Handler {
 	return &Handler{
 		db: db,
 	}
 }
 
-func (h *Handler) GetUser(c *gin.Context) {
-	var u *model.User
-	if err := c.BindJSON(&u); err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
-		c.Abort()
-		return
-	}
+func (h *Handler) GetUserHandler(c *gin.Context) {
+	name := c.Param("userName")
 
-	u, err := h.db.GetUser(u.Name)
+	u, err := h.db.GetUser(name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		c.Abort()
@@ -35,7 +30,7 @@ func (h *Handler) GetUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"user": u})
 }
 
-func (h *Handler) SetUser(c *gin.Context) {
+func (h *Handler) SetUserHandler(c *gin.Context) {
 	var u *model.User
 	if err := c.BindJSON(&u); err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())

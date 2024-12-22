@@ -11,19 +11,34 @@ type DataBase struct {
 	r *redis.Client
 }
 
-func NewDataBase(r *redis.Client) *DataBase {
+func NewDataBase(address string) *DataBase {
+	client := redis.NewClient(&redis.Options{
+		Addr:     address,
+		Password: "",
+		DB:       0,
+	})
+
+	if err := client.Ping(context.Background()).Err(); err != nil {
+		panic(err)
+	}
+
 	return &DataBase{
-		r: r,
+		r: client,
 	}
 }
 
 func (db *DataBase) SetUser(u *model.User) error {
-	return db.r.HSet(context.Background(), u.Name, u).Err()
+	return db.r.HSet(context.Background(), u.Login, u).Err()
 }
 
 func (db *DataBase) GetUser(name string) (u *model.User, err error) {
-	if err = db.r.Get(context.Background(), name).Scan(u); err != nil {
+	user := model.User{}
+	if err := db.r.HGetAll(context.Background(), name).Scan(&user); err != nil {
 		return nil, err
 	}
-	return u, nil
+	return &user, nil
+}
+
+func (db *DataBase) Close() (err error) {
+	return db.r.Close()
 }
