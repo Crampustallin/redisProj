@@ -1,4 +1,4 @@
-package server
+package handler 
 
 import (
 	"net/http"
@@ -17,7 +17,7 @@ func NewServer(db DataBase) *Handler {
 	}
 }
 
-func (s *Handler) GetUser(c *gin.Context) {
+func (h *Handler) GetUser(c *gin.Context) {
 	var u *model.User
 	if err := c.BindJSON(&u); err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
@@ -25,7 +25,7 @@ func (s *Handler) GetUser(c *gin.Context) {
 		return
 	}
 
-	u, err := s.db.GetUser(u.Name)
+	u, err := h.db.GetUser(u.Name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		c.Abort()
